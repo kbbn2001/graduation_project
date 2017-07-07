@@ -44,12 +44,17 @@ from __future__ import print_function
 
 import argparse
 import sys
+import os.path
+import re
 
 import tensorflow as tf
+from tensorflow.python.platform import gfile
 
 parser = argparse.ArgumentParser()
+'''
 parser.add_argument(
     '--image', required=True, type=str, help='Absolute path to image file.')
+'''
 parser.add_argument(
     '--num_top_predictions',
     type=int,
@@ -96,7 +101,7 @@ def load_graph(filename):
 
 
 def run_graph(image_data, labels, input_layer_name, output_layer_name,
-              num_top_predictions):
+              num_top_predictions, input_label):
   with tf.Session() as sess:
     # Feed the image_data as input to the graph.
     #   predictions  will contain a two-dimensional array, where one
@@ -107,40 +112,92 @@ def run_graph(image_data, labels, input_layer_name, output_layer_name,
 
     # Sort to show labels in order of confidence
     top_k = predictions.argsort()[-num_top_predictions:][::-1]
+
+    order = []
+    count = [0,0]
     for node_id in top_k:
       human_string = labels[node_id]
       score = predictions[node_id]
       print('%s (score = %.5f)' % (human_string, score))
+      order.append(human_string)
+    if (input_label == order[0] ):
+        count[0] = count[0] + 1
+    else:
+        count[1] = count[1] + 1
+    return count
 
-    return 0
+def load_images_path():
+    images_path = './test_images'
+    result = {}
+    sub_dirs = [x[0] for x in gfile.Walk(images_path)]
+    is_root_dir = True
+    for sub_dir in sub_dirs:
+        if is_root_dir:
+            is_root_dir = False
+            continue
+        extensions = ['jpg', 'jpeg', 'JPG', 'JPEG']
+        file_list = []
+        dir_name = os.path.basename(sub_dir)  # 전체 경로가 아닌 서브 폴더의 이름(flood, unflood)
+
+        if dir_name == images_path:
+            continue
+        print("Looking for images in '" + dir_name + "'")
+        for extension in extensions:
+            file_glob = os.path.join(images_path, dir_name, '*.' + extension)
+            file_list.extend(gfile.Glob(file_glob))
+            # file_list 에는 각 서브 폴더의 jpg 파일들이 담겨있는 리스트.
+            # [./data/flood/1.jpg , , , , , , , ,] 이런식으로 담겨있음
+
+        if not file_list:
+            print('No files found')
+            continue
+
+        label_name = re.sub(r'[^a-z0-9]+', ' ', dir_name.lower())
+
+        result[label_name] = {'datas': file_list}
+    return result
 
 
 def main(argv):
-  """Runs inference on an image."""
-  if argv[1:]:
-    raise ValueError('Unused Command Line Args: %s' % argv[1:])
+    """Runs inference on an image."""
+    if argv[1:]:
+        raise ValueError('Unused Command Line Args: %s' % argv[1:])
+    '''
+    if not tf.gfile.Exists(FLAGS.image):
+        tf.logging.fatal('image file does not exist %s', FLAGS.image)
+    '''
 
-  if not tf.gfile.Exists(FLAGS.image):
-    tf.logging.fatal('image file does not exist %s', FLAGS.image)
+    if not tf.gfile.Exists(FLAGS.labels):
+        tf.logging.fatal('labels file does not exist %s', FLAGS.labels)
 
-  if not tf.gfile.Exists(FLAGS.labels):
-    tf.logging.fatal('labels file does not exist %s', FLAGS.labels)
+    if not tf.gfile.Exists(FLAGS.graph):
+        tf.logging.fatal('graph file does not exist %s', FLAGS.graph)
 
-  if not tf.gfile.Exists(FLAGS.graph):
-    tf.logging.fatal('graph file does not exist %s', FLAGS.graph)
+    # load labels
+    labels = load_labels(FLAGS.labels)
 
-  # load image
-  image_data = load_image(FLAGS.image)
 
-  # load labels
-  labels = load_labels(FLAGS.labels)
+    # load graph, which is stored in the default session
+    load_graph(FLAGS.graph)
 
-  # load graph, which is stored in the default session
-  load_graph(FLAGS.graph)
+    result = load_images_path()
 
-  run_graph(image_data, labels, FLAGS.input_layer, FLAGS.output_layer,
-            FLAGS.num_top_predictions)
+    correct = 0
+    fail = 0
+    for myLabel in result:
+        for myImage in result[myLabel]['datas']:
+          #print(myImage)
 
+          # load image
+          #image_data = load_image(FLAGS.image)
+          image_data = load_image(myImage)
+
+          count = run_graph(image_data, labels, FLAGS.input_layer, FLAGS.output_layer,
+                    FLAGS.num_top_predictions, myLabel)
+          correct = correct + count[0]
+          fail = fail + count[1]
+
+    print("total %f testing file , correct %f , fail %f , correct rate %f " % (correct + fail , correct , fail, correct/(correct + fail) ))
 
 if __name__ == '__main__':
   FLAGS, unparsed = parser.parse_known_args()
