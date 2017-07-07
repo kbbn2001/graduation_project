@@ -143,13 +143,16 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
       continue
     extensions = ['jpg', 'jpeg', 'JPG', 'JPEG']
     file_list = []
-    dir_name = os.path.basename(sub_dir)
+    dir_name = os.path.basename(sub_dir)    # 전체 경로가 아닌 서브 폴더의 이름(flood, unflood)
     if dir_name == image_dir:
       continue
     print("Looking for images in '" + dir_name + "'")
     for extension in extensions:
       file_glob = os.path.join(image_dir, dir_name, '*.' + extension)
       file_list.extend(gfile.Glob(file_glob))
+      # file_list 에는 각 서브 폴더의 jpg 파일들이 담겨있는 리스트.
+      # [./data/flood/1.jpg , , , , , , , ,] 이런식으로 담겨있음
+
     if not file_list:
       print('No files found')
       continue
@@ -158,18 +161,20 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
     elif len(file_list) > MAX_NUM_IMAGES_PER_CLASS:
       print('WARNING: Folder {} has more than {} images. Some images will '
             'never be selected.'.format(dir_name, MAX_NUM_IMAGES_PER_CLASS))
+    # 파일들의 예외 처리. 파일이 없어도 안되고 너무 작아도(20개 이하)안되고 너무 많아도 안된다.
+
     label_name = re.sub(r'[^a-z0-9]+', ' ', dir_name.lower())
     training_images = []
     testing_images = []
     validation_images = []
     for file_name in file_list:
-      base_name = os.path.basename(file_name)
+      base_name = os.path.basename(file_name)   #그냥 단순 파일 이름. (1.jpg)
       # We want to ignore anything after '_nohash_' in the file name when
       # deciding which set to put an image in, the data set creator has a way of
       # grouping photos that are close variations of each other. For example
       # this is used in the plant disease data set to group multiple pictures of
       # the same leaf.
-      hash_name = re.sub(r'_nohash_.*$', '', file_name)
+      hash_name = re.sub(r'_nohash_.*$', '', file_name) #경로까지 포함 파일 이름 (./data/flood/1.jpg)
       # This looks a bit magical, but we need to decide whether this file should
       # go into the training, testing, or validation sets, and we want to keep
       # existing files in the same set even if more files are subsequently
@@ -177,7 +182,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
       # To do that, we need a stable way of deciding based on just the file name
       # itself, so we do a hash of that and then use that to generate a
       # probability value that we use to assign it.
-      hash_name_hashed = hashlib.sha1(compat.as_bytes(hash_name)).hexdigest()
+      hash_name_hashed = hashlib.sha1(compat.as_bytes(hash_name)).hexdigest()   #hash_name을 해쉬한 결과
       percentage_hash = ((int(hash_name_hashed, 16) %
                           (MAX_NUM_IMAGES_PER_CLASS + 1)) *
                          (100.0 / MAX_NUM_IMAGES_PER_CLASS))
@@ -187,6 +192,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
         testing_images.append(base_name)
       else:
         training_images.append(base_name)
+        # 해쉬의 결과를 가지고 트레이닝셋, 벨리데이션셋, 테스팅셋으로 나눈다.
     result[label_name] = {
         'dir': dir_name,
         'training': training_images,
@@ -810,6 +816,7 @@ def save_graph_to_file(sess, graph, graph_file_name):
 
 def prepare_file_system():
   # Setup the directory we'll write summaries to for TensorBoard
+  # 로그를 남길 폴더가 이미 존재하면 지웠다 다시 만들고 없으면 그냥 만든다.
   if tf.gfile.Exists(FLAGS.summaries_dir):
     tf.gfile.DeleteRecursively(FLAGS.summaries_dir)
   tf.gfile.MakeDirs(FLAGS.summaries_dir)
@@ -823,6 +830,8 @@ def main(_):
   prepare_file_system()
 
   # Set up the pre-trained graph.
+  #학습에 이용할 모델이 존재하지 않으면 다운로드 받는것 같음.
+  #여기서는 inception v3를 사용하는것으로 보인다.
   maybe_download_and_extract()
   graph, bottleneck_tensor, jpeg_data_tensor, resized_image_tensor = (
       create_inception_graph())
