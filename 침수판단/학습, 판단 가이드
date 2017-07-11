@@ -9,10 +9,13 @@ retrain.py 파일 약간 수정해서 현재 디렉토리의 data 폴더에 라�
 원하는 이미지가 어떤 label에 더 가까운지 실험하기 위해 label_image.py 를 실행한다.
 실행 문장은 아래와 같이 하면된다.
 
-python label_image.py --graph=retrained_graph.pb --labels=retrained_labels.txt --image=378.jpg
+python label_image.py --graph=retrained_graph.pb --labels=retrained_labels.txt
 
 pb 파일은 위에서 retrain.py 으로 만들어진 파일이다.
 labels 은 위에서 output_labels.txt 을 사용한다.
-image 는 판단하기를 원하는 이미지 파일 이다.
+그리고 test_images에 들어있는 모든 사진들을 판단하게 된다.
 
 위의 명령어를 입력하면 어느 라벨에 어떠한 확률로 판단하는지 출력한다.
+
+
+python label_image.py --graph=output_graph.pb --labels=output_labels.txt
