@@ -4,20 +4,25 @@ import xml.etree.ElementTree as ET
 import csv
 import os
 
-paths = ["부산_중구_대청동" , "대구_동구_신암동" , "서울_종로구_교남동" , "충북청주_흥덕구_복대동","강원도_평창군_대관령면" , "광주_북구_동림동"]
-# 부산 중구 대청동(97, 74), 대구 동구 신암동(89,91) , 서울 종로구 교남동(60, 127) , 충북 청주 흥덕구 복대동(68, 107) , 강원도 평찬군 대관령면(89, 130) , 광주 북구 동림동(59, 75)
+paths = ["부산_중구_대청동" , "대구_동구_신암동" , "서울_종로구_교남동" , "충북청주_흥덕구_복대동","강원도_평창군_대관령면" , "광주_북구_동림동", "부산_금정구_청룡동", "부산_금정구_장전2동", "부산_해운대구_중1동", "부산_영도구_동삼2동", "부산_사상구_감전동", "부산_동래구_복산동"]
+
+# 부산 중구 대청동(97, 74), 대구 동구 신암동(89,91) , 서울 종로구 교남동(60, 127) , 충북 청주 흥덕구 복대동(68, 107) , 강원도 평찬군 대관령면(89, 130) , 광주 북구 동림동(59, 75)   :  종관기상관측(ASOS)
+# 부산 금정구 청룡동(98, 78), 부산 금정구 장전2동(98, 77), 부산 해운대구 중1동(99, 75), 부산 영도구 동삼2동(98, 73), 부산 사상구 감전동(96, 75) 부산 동래구 복산동(98, 76)   :   방재기상관측(AWS)
 
 times = ['0200', '0500', '0800', '1100', '1400', '1700', '2000' , '2300']
+
 # 동네예보 발표 시간
 
-nxs = [97, 89, 60, 68, 89, 59]
-nys = [74, 91, 127, 107, 130, 75]
+nxs = [97, 89, 60, 68, 89, 59, 98, 98, 99, 98, 96, 98]
+nys = [74, 91, 127, 107, 130, 75, 78, 77, 75, 73, 75, 76]
 
 
 def getTime():
     year = datetime.datetime.now().year
-    month = datetime.datetime.now().month
-    day = datetime.datetime.now().day
+    #month = datetime.datetime.now().month
+    #day = datetime.datetime.now().day
+    month = 8
+    day = 1
     hour = datetime.datetime.now().hour
     minute = datetime.datetime.now().minute
 
@@ -32,6 +37,7 @@ def getTime():
 
     return year, month, day, hour, minute
 
+
 def dirCheck(path):
     directory = os.path.dirname(path)
     try:
@@ -42,7 +48,7 @@ def dirCheck(path):
 
 def getXMLData(index, year, month, day, time):
     url = 'http://newsky2.kma.go.kr/service/SecndSrtpdFrcstInfoService2/ForecastSpaceData'
-    ServiceKey = 'Nhvs%2BMR4nwyyRgq2gdY5G5N66LTXBba%2F960V2QKAdURR5pkS3ioKXHz8%2B1i6N2Ld3qz8PMMuo4nDVMsItEjXOg%3D%3D'
+    ServiceKey = 'uHNgVQh82tze7tpxOfBUAGU5D6hqqbVB5v3756zzuY4roqutD8W7Rao1h1ZZnbLXcyH8hcfLl4FOxpRb2%2Buu5g%3D%3D'
     base_date = str(year) + str(month) + str(day)
     base_time = time
     nx = nxs[index]
@@ -135,15 +141,18 @@ def XMLToCSV(xmlFilePath, csvFilePath):
 #this is main code
 for i in range(len(paths)):
     year, month, day, hour, minute = getTime()
-    currentDetailTime = str(year) + str(month) + str(day) + str(hour) + str(minute)
+    currentTime = str(year) + str(month) + str(day)
+
 
     for time in times:
-        xmlFilePath = "./" + paths[i] + "/" + currentDetailTime + "_" + time + ".xml"
+        xmlFilePath = "./" + paths[i] + "/" + currentTime + time + ".xml"
         xmlResult = getXMLData(i, year, month, day, time)
         saveXMLFile(xmlFilePath, xmlResult)
 
         # xml to csv convert
-        csvFilePath = './' + paths[i] + '/csv/' + currentDetailTime + "_" + str(time) + '.csv'
+        csvFilePath = './' + paths[i] + '/csv/' + currentTime + time + '.csv'
+        print(csvFilePath)
+        print(xmlFilePath)
         XMLToCSV(xmlFilePath, csvFilePath)
 
 
