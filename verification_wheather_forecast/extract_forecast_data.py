@@ -19,10 +19,8 @@ nys = [74, 91, 127, 107, 130, 75, 78, 77, 75, 73, 75, 76]
 
 def getTime():
     year = datetime.datetime.now().year
-    #month = datetime.datetime.now().month
-    #day = datetime.datetime.now().day
-    month = 8
-    day = 1
+    month = datetime.datetime.now().month
+    day = datetime.datetime.now().day
     hour = datetime.datetime.now().hour
     minute = datetime.datetime.now().minute
 
