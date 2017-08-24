@@ -4,17 +4,20 @@ import xml.etree.ElementTree as ET
 import csv
 import os
 
-paths = ["부산_중구_대청동" , "대구_동구_신암동" , "서울_종로구_교남동" , "충북청주_흥덕구_복대동","강원도_평창군_대관령면" , "광주_북구_동림동", "부산_금정구_청룡동", "부산_금정구_장전2동", "부산_해운대구_중1동", "부산_영도구_동삼2동", "부산_사상구_감전동", "부산_동래구_복산동"]
+paths = ["부산_중구_대청동" , "대구_동구_신암동" , "서울_종로구_교남동" , "충북청주_흥덕구_복대동","강원도_평창군_대관령면" , "광주_북구_동림동",
+         "부산_금정구_청룡동", "부산_금정구_장전2동", "부산_해운대구_중1동", "부산_영도구_동삼2동", "부산_사상구_감전동", "부산_동래구_복산동",
+         "부산_기장군_일광면", "부산_북구_덕천동", "부산_진구_개금동", "부산_남구_대연동", "부산_서구_서대신동", "부산_사하구_장림동", "부산_영도구_신성동", "부산_남구_용호동"]
 
 # 부산 중구 대청동(97, 74), 대구 동구 신암동(89,91) , 서울 종로구 교남동(60, 127) , 충북 청주 흥덕구 복대동(68, 107) , 강원도 평찬군 대관령면(89, 130) , 광주 북구 동림동(59, 75)   :  종관기상관측(ASOS)
 # 부산 금정구 청룡동(98, 78), 부산 금정구 장전2동(98, 77), 부산 해운대구 중1동(99, 75), 부산 영도구 동삼2동(98, 73), 부산 사상구 감전동(96, 75) 부산 동래구 복산동(98, 76)   :   방재기상관측(AWS)
+# 부산 기장군 일광면(101, 78), 부산 북구 덕천동(97, 76), 부산 진구 개금동(97, 75), 부산 남구 대연동(98, 75), 부산 서구 서대신동(97, 74), 부산 사하구 장림동(96, 73), 부산 영도구 신선동(97, 74), 부산 남구 용호동(99, 74)
 
 times = ['0200', '0500', '0800', '1100', '1400', '1700', '2000' , '2300']
 
 # 동네예보 발표 시간
 
-nxs = [97, 89, 60, 68, 89, 59, 98, 98, 99, 98, 96, 98]
-nys = [74, 91, 127, 107, 130, 75, 78, 77, 75, 73, 75, 76]
+nxs = [97, 89, 60, 68, 89, 59, 98, 98, 99, 98, 96, 98, 101, 97, 97, 98, 97, 96, 97, 99]
+nys = [74, 91, 127, 107, 130, 75, 78, 77, 75, 73, 75, 76, 78, 76, 75, 75, 74, 73, 74, 74]
 
 
 def getTime():
@@ -46,6 +49,7 @@ def dirCheck(path):
 
 def getXMLData(index, year, month, day, time):
     url = 'http://newsky2.kma.go.kr/service/SecndSrtpdFrcstInfoService2/ForecastSpaceData'
+    #ServiceKey = 'uHNgVQh82tze7tpxOfBUAGU5D6hqqbVB5v3756zzuY4roqutD8W7Rao1h1ZZnbLXcyH8hcfLl4FOxpRb2%2Buu5g%3D%3D'
     ServiceKey = 'uHNgVQh82tze7tpxOfBUAGU5D6hqqbVB5v3756zzuY4roqutD8W7Rao1h1ZZnbLXcyH8hcfLl4FOxpRb2%2Buu5g%3D%3D'
     base_date = str(year) + str(month) + str(day)
     base_time = time
@@ -149,8 +153,6 @@ for i in range(len(paths)):
 
         # xml to csv convert
         csvFilePath = './' + paths[i] + '/csv/' + currentTime + time + '.csv'
-        print(csvFilePath)
-        print(xmlFilePath)
         XMLToCSV(xmlFilePath, csvFilePath)
 
 
