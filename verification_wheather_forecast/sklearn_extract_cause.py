@@ -47,8 +47,8 @@ def tree_to_code(tree, feature_names):
 
 
 #main
-path = '부산_금정구_장전2동'
-data = read_csv(path + '_test.csv')
+path = '부산_영도구_동삼2동'
+data = read_csv(path + '_label_aws.csv')
 Y = data.gap
 #print(Y)
 
@@ -58,8 +58,7 @@ X = data[['location', 'date', 'thermal', 'wind_direction', 'wind_power', 'rain']
 decision_tree = tree.DecisionTreeClassifier(criterion='entropy') #, min_samples_leaf=10)
 decision_tree = decision_tree.fit(X,Y)
 
-
-dot_file = open(path + '_test.dot' , 'w')
+dot_file = open(path + '_decision_tree.dot' , 'w')
 tree.export_graphviz(decision_tree, out_file=dot_file, feature_names=X.columns, class_names=['0','1'])
 dot_file.close()
 system("dot -Tpng /home/kbbn2001/바탕화면/forecast/" + path + "_test.dot -o /home/kbbn2001/바탕화면/forecast/" + path + "_test.png")
