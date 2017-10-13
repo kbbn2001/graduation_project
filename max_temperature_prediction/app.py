@@ -132,9 +132,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ui.lineEdit_PW.setDisabled(False)
             self.ui.spinBox_Year.setDisabled(False)
 
-            #self.ui.lineEdit_ID.setText("ehfdlgus@gmail.com")
-            ##self.ui.lineEdit_PW.setText("dlgu$tjr1gh")
-
         self.ui.statusbar.showMessage("대기중")
 
     def on_click_download_aws(self):
